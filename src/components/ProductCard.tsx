@@ -26,9 +26,9 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
       <div className="p-4">
-        <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">
-          {product.category}
-        </span>
+        {/*<span className="text-xs font-medium text-orange-600 uppercase tracking-wide">*/}
+        {/*  {product.category}*/}
+        {/*</span>*/}
         <h3 className="mt-1 text-lg font-semibold text-gray-900 line-clamp-1">
           {product.name}
         </h3>

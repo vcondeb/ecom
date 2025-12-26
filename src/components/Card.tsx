@@ -28,11 +28,11 @@ export function Card({
     <>
       {/* Image container */}
       <div className="relative aspect-square bg-light-200 overflow-hidden">
-        {badge && (
-          <span className="absolute top-4 left-4 z-10 bg-orange text-light-100 text-caption font-caption px-3 py-1 rounded-sm">
-            {badge}
-          </span>
-        )}
+        {/*{badge && (*/}
+        {/*  <span className="absolute top-4 left-4 z-10 bg-orange text-light-100 text-caption font-caption px-3 py-1 rounded-sm">*/}
+        {/*    {badge}*/}
+        {/*  </span>*/}
+        {/*)}*/}
         <Image
           src={image}
           alt={title}
@@ -44,11 +44,11 @@ export function Card({
 
       {/* Content */}
       <div className="p-4">
-        {category && (
-          <span className="text-caption font-caption text-dark-700 block mb-1">
-            {category}
-          </span>
-        )}
+        {/*{category && (*/}
+        {/*  <span className="text-caption font-caption text-dark-700 block mb-1">*/}
+        {/*    {category}*/}
+        {/*  </span>*/}
+        {/*)}*/}
         <h3 className="text-body font-body-medium text-dark-900 line-clamp-1">
           {title}
         </h3>
