@@ -5,7 +5,7 @@ import { SocialProviders } from "@/components/SocialProviders";
 export default function SignUpPage() {
   return (
     <div className="space-y-8">
-      <div className="text-right lg:hidden">
+      <div className="text-center lg:hidden">
         <span className="text-caption text-dark-500">
           Already have an account?{" "}
           <Link
@@ -17,7 +17,7 @@ export default function SignUpPage() {
         </span>
       </div>
 
-      <div className="hidden lg:block text-right">
+      <div className="hidden lg:block text-center">
         <span className="text-caption text-dark-500">
           Already have an account?{" "}
           <Link
