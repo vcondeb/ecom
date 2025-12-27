@@ -4,9 +4,10 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
+import { db } from "@/lib/db";
 import { guest } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
 
 const GUEST_SESSION_COOKIE = "guest_session";
 const GUEST_SESSION_EXPIRY_DAYS = 7;
@@ -39,27 +40,21 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
   if (!validation.success) {
     return {
       success: false,
-      error: validation.error.errors[0]?.message || "Invalid input",
+      error: validation.error.issues[0]?.message || "Invalid input",
     };
   }
 
   const { email, password, name } = validation.data;
 
   try {
-    const result = await auth.api.signUpEmail({
+    await auth.api.signUpEmail({
       body: {
         email,
         password,
         name: name || "",
       },
+      headers: await getRequestHeaders(),
     });
-
-    if (!result) {
-      return {
-        success: false,
-        error: "Failed to create account",
-      };
-    }
 
     await mergeGuestCartWithUserCart();
 
@@ -81,26 +76,20 @@ export async function signIn(input: SignInInput): Promise<AuthActionResult> {
   if (!validation.success) {
     return {
       success: false,
-      error: validation.error.errors[0]?.message || "Invalid input",
+      error: validation.error.issues[0]?.message || "Invalid input",
     };
   }
 
   const { email, password } = validation.data;
 
   try {
-    const result = await auth.api.signInEmail({
+    await auth.api.signInEmail({
       body: {
         email,
         password,
       },
+      headers: await getRequestHeaders(),
     });
-
-    if (!result) {
-      return {
-        success: false,
-        error: "Invalid email or password",
-      };
-    }
 
     await mergeGuestCartWithUserCart();
 
@@ -119,12 +108,10 @@ export async function signIn(input: SignInInput): Promise<AuthActionResult> {
 
 export async function signOut(): Promise<AuthActionResult> {
   try {
-    const cookieStore = await cookies();
-    const authCookies = cookieStore.getAll().filter((c) => c.name.startsWith("auth"));
-    
-    for (const cookie of authCookies) {
-      cookieStore.delete(cookie.name);
-    }
+    const headers = await getRequestHeaders();
+    await auth.api.signOut({
+      headers
+    });
 
     return {
       success: true,
@@ -161,7 +148,7 @@ export async function createGuestSession(): Promise<string> {
     }
   }
 
-  const sessionToken = crypto.randomUUID();
+  const sessionToken = uuidv4();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + GUEST_SESSION_EXPIRY_DAYS);
 
@@ -212,7 +199,7 @@ export async function mergeGuestCartWithUserCart(): Promise<void> {
   cookieStore.delete(GUEST_SESSION_COOKIE);
 }
 
-export async function requireAuth(redirectTo: string = "/auth/signin"): Promise<void> {
+export async function requireAuth(redirectTo: string = "/sign-in"): Promise<void> {
   const session = await auth.api.getSession({
     headers: await getRequestHeaders(),
   });
@@ -236,7 +223,11 @@ export async function getSession() {
 async function getRequestHeaders(): Promise<Headers> {
   const cookieStore = await cookies();
   const headers = new Headers();
-  headers.set("cookie", cookieStore.toString());
+  const cookieString = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+  headers.set("cookie", cookieString);
   return headers;
 }
 
@@ -249,6 +240,6 @@ export async function checkoutGuard(): Promise<{ authenticated: boolean; redirec
 
   return {
     authenticated: false,
-    redirectTo: "/auth/signin?callbackUrl=/checkout",
+    redirectTo: "/sign-in?callbackUrl=/checkout",
   };
 }
